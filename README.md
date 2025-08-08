@@ -32,6 +32,8 @@ This repository is a practical guide to understanding Pytest. It includes:
 * 🧪 Using assertions
 * 🔁 Parameterization
 * 🧩 Fixtures
+* 🏷️ Markers
+* 📂 conftest.py usage
 * 🔌 Plugins
 * 🛠 Best practices
 
@@ -113,3 +115,189 @@ For full reference, check the official Pytest usage documentation:
 7. **Run a specific test method inside a class:**
 
    	python -m pytest tst/test_calc_div_class.py::TestCalcDivClass::test_calc_div_positive_no_exp
+
+## 🏷️ Using Markers in Pytest
+
+**Markers** allow you to categorize and selectively run tests.
+For example, you might have tests marked as `smoke`, `regression`, or `slow`.
+
+### Example:
+
+```python
+import pytest
+
+@pytest.mark.smoke
+def test_login_valid():
+    assert True
+
+@pytest.mark.regression
+def test_add_item_to_cart():
+    assert True
+```
+
+### Running tests by marker:
+
+```bash
+python -m pytest -m smoke
+```
+
+### Registering custom markers:
+
+Add them to `pytest.ini` to avoid warnings:
+
+```ini
+[pytest]
+markers =
+    smoke: quick checks for core functionality
+    regression: full regression tests
+```
+
+---
+
+## 🧩 Fixtures in Pytest
+
+**Fixtures** are a powerful way to set up and tear down resources needed for your tests.
+They help avoid repetitive code and keep tests clean.
+
+### Example:
+
+```python
+import pytest
+
+@pytest.fixture
+def sample_data():
+    return {"username": "test_user", "password": "secret"}
+
+def test_user_login(sample_data):
+    assert sample_data["username"] == "test_user"
+```
+
+### Running with fixture setup/teardown:
+
+Fixtures can also use `yield` to run cleanup code after the test.
+
+```python
+@pytest.fixture
+def db_connection():
+    print("Connecting to DB")
+    yield
+    print("Closing DB connection")
+```
+
+---
+
+## 🔁 Parameterization
+
+Parameterization lets you run the same test logic with multiple sets of data.
+
+### Example:
+
+```python
+import pytest
+
+@pytest.mark.parametrize("a,b,expected", [
+    (2, 3, 5),
+    (1, 1, 2),
+    (10, -5, 5)
+])
+def test_addition(a, b, expected):
+    assert a + b == expected
+```
+
+Run once, this will execute **three test cases**.
+
+---
+
+## 📂 The Role of `conftest.py`
+
+The `conftest.py` file allows you to share **fixtures**, **hooks**, and **plugins** across multiple test files without importing them manually.
+
+### Example:
+
+**conftest.py**
+
+```python
+import pytest
+
+@pytest.fixture
+def api_client():
+    return {"base_url": "https://api.example.com"}
+```
+
+**test\_api.py**
+
+```python
+def test_get_users(api_client):
+    assert api_client["base_url"] == "https://api.example.com"
+```
+
+💡 **Tip:** Pytest automatically detects `conftest.py` in your project tree.
+
+---
+
+## 🔌 Using Pytest Plugins
+
+Pytest has many plugins to extend its capabilities.
+You can install them via `pip` and use them right away.
+
+### Example: `pytest-html` for HTML reports
+
+```bash
+pip install pytest-html
+python -m pytest --html=report.html
+```
+
+### Example: `pytest-xdist` for parallel execution
+
+```bash
+pip install pytest-xdist
+python -m pytest -n 4
+```
+
+---
+
+## 📂 Example Project Structure
+
+```
+pytest-tutorial/
+│
+├── tests/
+│   ├── test_calc_add.py
+│   ├── test_calc_div_class.py
+│   └── test_api.py
+│
+├── conftest.py
+├── requirements.txt
+├── pytest.ini
+└── README.md
+```
+
+---
+
+## 🛠 Best Practices
+
+* **Use descriptive test names** (e.g., `test_user_login_with_valid_credentials` instead of `test_login1`)
+* **Keep tests independent** (don’t rely on one test’s output for another)
+* **Leverage fixtures** for setup/teardown
+* **Mark slow or resource-heavy tests** so they can be skipped in quick runs
+* **Use `pytest.ini`** to define markers, addopts, and other defaults
+* **Run tests in CI/CD** for automation
+
+---
+
+## 📌 Summary
+
+With Pytest, you can:
+
+* Write clean and readable tests.
+* Use fixtures for setup/teardown.
+* Organize tests with markers.
+* Share resources via `conftest.py`.
+* Run tests flexibly using CLI options.
+* Extend functionality with plugins.
+* Apply best practices for maintainability.
+
+For more information, explore:
+📘 [Pytest Documentation](https://docs.pytest.org)
+
+```
